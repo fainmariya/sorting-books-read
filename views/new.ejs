@@ -1,0 +1,14 @@
+<%- include("partials/header") %>
+<main class="container">
+  <h1>Add a book</h1>
+  <form action="/books" method="post" class="new-form">
+    <label>Title<input type="text" name="books_name" required></label>
+    <label>Author<input type="text" name="author" required></label>
+    <label>ISBN (for cover)<input type="text" name="isbn" placeholder="e.g. 9780143127741"></label>
+    
+    <label>Read date<input type="date" name="read_date"></label>
+    <label>Rating (0–10)<input type="number" name="rating" min="0" max="10"></label>
+    <button class="btn" type="submit">Save</button>
+  </form>
+</main>
+<%- include("partials/footer") %>

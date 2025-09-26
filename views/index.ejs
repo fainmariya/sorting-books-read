@@ -1,0 +1,38 @@
+<%- include("partials/header") %>
+
+<main class="container">
+  <h1>📚 My Read Books</h1>
+  <header class="toolbar">
+    <p>Sorted with my top recommendations up top. Sort by
+      <a class="<%= sort==='title' ? 'active' : '' %>"
+         href="/?sort=title&order=asc">title</a>,
+      <a class="<%= sort==='newest' ? 'active' : '' %>"
+         href="/?sort=newest&order=desc">newest</a>, or
+      <a class="<%= sort==='best' ? 'active' : '' %>"
+         href="/?sort=best&order=desc">best</a>.
+    </p>
+  </header>
+
+  <a class="btn" href="/new">+ Add a book</a>
+  
+  <section class="grid">
+    <% books.forEach(b => { %>
+      <article class="card">
+        <img class="cover" src="<%= b.cover %>" alt="Cover of <%= b.books_name %>">
+        <div class="info">
+          <h3><%= b.books_name %></h3>
+          <p class="author"><%= b.author %></p>
+          <% if (b.rating) { %><p class="rating">★ <%= b.rating %>/10</p><% } %>
+        </div>
+        <div class="actions">
+            <a class="btn notes-btn" href="/books/<%= b.id %>">📝 My notes</a>
+            
+            <a class="btn buy-btn" href="<%= b.buyUrl %>" target="_blank" rel="noopener">🛒 Buy</a>
+          </div>
+          
+      </article>
+    <% }) %>
+  </section>
+</main>
+
+<%- include("partials/footer") %>

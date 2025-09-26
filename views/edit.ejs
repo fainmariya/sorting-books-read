@@ -1,0 +1,26 @@
+<%- include("partials/header") %>
+
+<main class="container">
+  <a href="/books/<%= book.id %>" class="back">← Back to book</a>
+  <h1>Edit book</h1>
+
+  <form action="/books/<%= book.id %>/update-meta" method="POST" class="new-form">
+    <label>Title
+      <input type="text" name="books_name" value="<%= book.books_name %>" required>
+    </label>
+
+    <label>Author
+      <input type="text" name="author" value="<%= book.author %>" required>
+    </label>
+
+    <label>ISBN
+      <div style="display:flex; gap:.5rem;">
+        <input id="isbn" type="text" name="isbn" value="<%= book.isbn || '' %>" placeholder="978...">
+        <button class="btn secondary" type="button" id="findIsbnBtn">Find ISBN</button>
+      </div>
+      <small>Use 13-digit ISBN if available</small>
+    </label>
+
+    <button class="btn" type="submit">Save changes</button>
+  </form>
+</main>
