@@ -4,6 +4,10 @@ import { fileURLToPath } from "url";
 import axios from "axios";
 import pg from "pg";
 
+console.log("DB_URL set:", Boolean(process.env.DATABASE_URL));
+console.log("DB_URL prefix:", (process.env.DATABASE_URL || "").slice(0, 12)); // должно быть "postgresql:/"
+
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
