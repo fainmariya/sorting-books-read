@@ -10,6 +10,8 @@ console.log("DB_URL prefix:", (process.env.DATABASE_URL || "").slice(0, 12)); //
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const toNull = v => (v === '' || v === undefined ? null : v);
+
 
 const app = express();
 
@@ -91,15 +93,32 @@ app.get("/new", (req, res) => res.render("new", { title: "Add a book" }));
 
 // create
 app.post("/books", async (req, res) => {
-  const { books_name, author, isbn, read_date, rating } = req.body;
-  await db.query(
-    `INSERT INTO lib_books (books_name, author, isbn, read_date, rating)
-     VALUES ($1,$2,$3,$4,$5)`,
-    [books_name, author, isbn || null, read_date || null, rating || null]
-  );
-  res.redirect("/");
-});
+  try {
+    const { books_name, author, isbn, read_date, rating } = req.body;
 
+    // basic validation
+    if (!books_name || !books_name.trim()) {
+      return res.status(400).send("Title is required");
+    }
+
+    await db.query(
+      `INSERT INTO lib_books (books_name, author, isbn, read_date, rating)
+       VALUES ($1,$2,$3,$4,$5)`,
+      [
+        books_name.trim(),
+        toNull(author),
+        toNull(isbn),
+        toNull(read_date),                 // '' -> NULL, avoids TIMESTAMP errors
+        toNull(rating) === null ? null : Number(rating) // '' -> NULL; otherwise number
+      ]
+    );
+
+    res.redirect("/");
+  } catch (err) {
+    console.error("POST /books failed:", err);
+    res.status(500).send("Server error while adding a book");
+  }
+});
 // update meta
 app.post("/books/:id/update-meta", async (req, res) => {
   const { id } = req.params;
