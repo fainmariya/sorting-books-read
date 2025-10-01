@@ -14,6 +14,13 @@ const toNull = v => (v === '' || v === undefined ? null : v);
 
 
 const app = express();
+// ---- Global error handlers ----
+process.on("unhandledRejection", (err) => {
+  console.error("UNHANDLED REJECTION:", err);
+});
+process.on("uncaughtException", (err) => {
+  console.error("UNCAUGHT EXCEPTION:", err);
+});
 
 // ====== CONFIG ======
 const API_URL = "https://covers.openlibrary.org/b"; // base
@@ -35,7 +42,12 @@ const db = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
 });
-
+// Debug info
+console.log("DB_URL set:", Boolean(process.env.DATABASE_URL));
+db.query("SELECT 1")
+  .then(() => console.log("DB OK ✅"))
+  .catch((e) => console.error("DB FAIL ❌", e));
+  
 // ====== MIDDLEWARE ======
 app.use(express.urlencoded({ extended: true })); // instead of body-parser
 app.use(express.json());
