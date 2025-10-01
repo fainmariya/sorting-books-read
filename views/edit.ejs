@@ -1,7 +1,11 @@
 <%- include("partials/header") %>
 
 <main class="container">
-  <a href="/books/<%= book.id %>" class="back">← Back to book</a>
+  <div class="actions">
+    <a href="/" class="btn secondary">← Back to main</a>
+    <a href="/books/<%= book.id %>" class="btn secondary">← Back to book</a>
+  </div>
+
   <h1>Edit book</h1>
 
   <form action="/books/<%= book.id %>/update-meta" method="POST" class="new-form">
@@ -24,3 +28,6 @@
     <button class="btn" type="submit">Save changes</button>
   </form>
 </main>
+
+<%- include("partials/footer") %>
+
