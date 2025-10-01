@@ -1,58 +1,52 @@
-<%- include("partials/header") %>
+// helper: normalize inputs
 
-<main class="container">
-  <a href="/" class="back">← Back</a>
+const toNull = v => (v === '' || v === undefined || v === null ? null : v);
+const toIntOrNull = v => {
+  if (v === '' || v === undefined || v === null) return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+};
+const toDateOrNull = v => {
+  if (!v) return null;
+  // поддержим 'YYYY-MM-DD' и 'YYYY-MM-DDTHH:mm'
+  const dt = new Date(v);
+  return isNaN(dt.getTime()) ? null : v; // Postgres сам приведет ISO-строку
+};
 
-  <div class="book-layout">
-    <img class="cover big" src="<%= book.cover %>" alt="Cover">
+app.post("/books", async (req, res) => {
+  try {
+    const { books_name, author, isbn, read_date, rating } = req.body;
 
-    <div>
-      <h1><%= book.books_name %></h1>
-      <p class="author"><%= book.author %></p>
-      <p>ISBN: <%= book.isbn || '—' %></p>
-      <% if (book.store_url) { %>
-        <p>
-          <a class="btn buy-btn" href="<%= book.buyUrl %>" target="_blank" rel="noopener">
-            🛒 Buy this book
-          </a>
-        </p>
-        
-      <% } %>
+    // 1) базовая валидация
+    if (!books_name || !books_name.trim()) {
+      return res.status(400).send("Title is required");
+    }
 
-      <!-- ФОРМА ОБНОВЛЕНИЯ (POST /books/:id/update) -->
-      <form action="/books/<%= book.id %>/update" method="post" class="notes-form">
-        <label>My notes</label>
-        <textarea name="notes" rows="10" placeholder="Type your thoughts..."><%= book.notes || '' %></textarea>
+    // 2) нормализация
+    const params = [
+      books_name.trim(),
+      toNull(author),
+      toNull(isbn),
+      toDateOrNull(read_date),
+      toIntOrNull(rating) // NULL если не число
+    ];
 
-        <div class="two">
-          <label>Rating (0–10)
-            <input type="number" name="rating" min="0" max="10" value="<%= book.rating ?? '' %>">
-          </label>
-          <label>Read date
-            <input type="date" name="read_date"
-              value="<%= book.read_date
-                        ? (book.read_date.toISOString
-                            ? book.read_date.toISOString().slice(0,10)
-                            : String(book.read_date).slice(0,10))
-                        : '' %>">
-          </label>
-        </div>
+    // 3) пробуем минимальную вставку, которая совпадает со схемой
+    const sql = `
+      INSERT INTO lib_books (books_name, author, isbn, read_date, rating)
+      VALUES ($1,$2,$3,$4,$5)
+      RETURNING id
+    `;
 
-        <label>Store link</label>
-        
-        <p style="margin-top:.5rem">
-          <a class="btn notes-btn" href="/books/<%= book.id %>/edit">Edit</a>
-          <a class="btn buy-btn" href="<%= book.buyUrl %>" target="_blank" rel="noopener">Buy this book</a>
-        </p>
-        <button class="btn" type="submit">Save</button>
-      </form>
-
-      <!-- ОТДЕЛЬНАЯ ФОРМА УДАЛЕНИЯ (POST /books/:id/delete) -->
-      <form action="/books/<%= book.id %>/delete" method="post" style="margin-top:.5rem">
-        <button class="btn danger" type="submit">Delete</button>
-      </form>
-    </div>
-  </div>
-</main>
-
-<%- include("partials/footer") %>
+    await db.query(sql, params);
+    res.redirect("/");
+  } catch (err) {
+    // Печатаем максимум полезной диагностики в логи Render
+    console.error("POST /books failed");
+    console.error("BODY:", req.body);
+    console.error("PG code:", err.code, "detail:", err.detail);
+    console.error("message:", err.message);
+    console.error(err.stack);
+    res.status(500).send("Server error while adding a book");
+  }
+});
