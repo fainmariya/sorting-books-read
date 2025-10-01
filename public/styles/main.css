@@ -143,29 +143,35 @@
   /* -------- BOOK PAGE -------- */
   .book-layout {
     display: grid;
-    grid-template-columns: 250px 1fr;
+    grid-template-columns: 1fr 1fr; /* две колонки */
     gap: 2rem;
-    align-items: flex-start;
+    align-items: start;
   }
   
-  .notes textarea {
+  .book-info img.cover {
+    max-width: 100%;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+  
+  .book-notes textarea {
     width: 100%;
     padding: 0.75rem;
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 1rem;
-    font-family: inherit;
-    resize: vertical; /* можно тянуть вниз */
-    min-height: 120px;
-    background: #fff; /* белый фон вместо чёрного */
+    resize: vertical;
+    min-height: 200px;
+    background: #fff;
     color: #333;
   }
   
-  .notes textarea:focus {
-    border-color: #007bff; /* подсветка синяя */
+  .book-notes textarea:focus {
+    border-color: #007bff;
     outline: none;
     box-shadow: 0 0 4px rgba(0, 123, 255, 0.4);
   }
+  
   
   .notes button {
     margin-top: 0.5rem;
