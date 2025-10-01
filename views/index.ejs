@@ -26,7 +26,9 @@
         </div>
         <div class="actions">
             <a class="btn notes-btn" href="/books/<%= b.id %>">📝 My notes</a>
-            
+            <form action="/books/<%= b.id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('Delete this book?');">
+                <button type="submit" class="btn danger">🗑</button>
+              </form>
             <a class="btn buy-btn" href="<%= b.buyUrl %>" target="_blank" rel="noopener">🛒 Buy</a>
           </div>
           

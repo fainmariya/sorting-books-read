@@ -163,15 +163,15 @@ app.post("/books", async (req, res) => {
 });
 
 // update meta
-app.post("/books/:id/update-meta", async (req, res) => {
+app.post("/books/:id/update-notes", async (req, res) => {
   const { id } = req.params;
-  const { books_name, author, isbn } = req.body;
+  const { notes } = req.body;
 
   await db.query(
     `UPDATE lib_books
-     SET books_name=$1, author=$2, isbn=$3
-     WHERE id=$4`,
-    [books_name, author, isbn || null, id]
+     SET notes = NULLIF($1,'')
+     WHERE id=$2`,
+    [notes, id]
   );
 
   res.redirect(`/books/${id}`);
