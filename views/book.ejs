@@ -1,52 +1,36 @@
-// helper: normalize inputs
+c<%- include("partials/header") %>
 
-const toNull = v => (v === '' || v === undefined || v === null ? null : v);
-const toIntOrNull = v => {
-  if (v === '' || v === undefined || v === null) return null;
-  const n = Number(v);
-  return Number.isFinite(n) ? n : null;
-};
-const toDateOrNull = v => {
-  if (!v) return null;
-  // поддержим 'YYYY-MM-DD' и 'YYYY-MM-DDTHH:mm'
-  const dt = new Date(v);
-  return isNaN(dt.getTime()) ? null : v; // Postgres сам приведет ISO-строку
-};
+<main class="container">
+  <a class="btn" href="/">← Back</a>
 
-app.post("/books", async (req, res) => {
-  try {
-    const { books_name, author, isbn, read_date, rating } = req.body;
+  <article class="book-details">
+    <header class="flex">
+      <img class="cover" src="<%= book.cover %>" alt="Cover of <%= book.books_name %>">
+      <div>
+        <h1><%= book.books_name %></h1>
+        <% if (book.author) { %><p><strong>Author:</strong> <%= book.author %></p><% } %>
+        <% if (book.isbn)   { %><p><strong>ISBN:</strong> <%= book.isbn %></p><% } %>
+        <% if (book.rating !== null && book.rating !== undefined) { %>
+          <p><strong>Rating:</strong> <%= book.rating %>/10</p>
+        <% } %>
+        <% if (book.read_date) { %>
+          <p><strong>Read:</strong> <%= new Date(book.read_date).toISOString().slice(0,10) %></p>
+        <% } %>
 
-    // 1) базовая валидация
-    if (!books_name || !books_name.trim()) {
-      return res.status(400).send("Title is required");
-    }
+        <p>
+          <a class="btn" href="/books/<%= book.id %>/edit">✏️ Edit</a>
+          <a class="btn" href="<%= book.buyUrl %>" target="_blank" rel="noopener">🛒 Buy</a>
+        </p>
+      </div>
+    </header>
 
-    // 2) нормализация
-    const params = [
-      books_name.trim(),
-      toNull(author),
-      toNull(isbn),
-      toDateOrNull(read_date),
-      toIntOrNull(rating) // NULL если не число
-    ];
+    <% if (book.notes) { %>
+      <section class="notes">
+        <h2>Notes</h2>
+        <p><%= book.notes %></p>
+      </section>
+    <% } %>
+  </article>
+</main>
 
-    // 3) пробуем минимальную вставку, которая совпадает со схемой
-    const sql = `
-      INSERT INTO lib_books (books_name, author, isbn, read_date, rating)
-      VALUES ($1,$2,$3,$4,$5)
-      RETURNING id
-    `;
-
-    await db.query(sql, params);
-    res.redirect("/");
-  } catch (err) {
-    // Печатаем максимум полезной диагностики в логи Render
-    console.error("POST /books failed");
-    console.error("BODY:", req.body);
-    console.error("PG code:", err.code, "detail:", err.detail);
-    console.error("message:", err.message);
-    console.error(err.stack);
-    res.status(500).send("Server error while adding a book");
-  }
-});
+<%- include("partials/footer") %>

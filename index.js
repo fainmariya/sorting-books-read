@@ -10,7 +10,7 @@ console.log("DB_URL prefix:", (process.env.DATABASE_URL || "").slice(0, 12)); //
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const toNull = v => (v === '' || v === undefined ? null : v);
+
 
 
 const app = express();
@@ -47,7 +47,7 @@ console.log("DB_URL set:", Boolean(process.env.DATABASE_URL));
 db.query("SELECT 1")
   .then(() => console.log("DB OK ✅"))
   .catch((e) => console.error("DB FAIL ❌", e));
-  
+
 // ====== MIDDLEWARE ======
 app.use(express.urlencoded({ extended: true })); // instead of body-parser
 app.use(express.json());
@@ -89,6 +89,14 @@ app.get("/", async (req, res) => {
     order,
   });
 });
+// edit form
+app.get("/books/:id/edit", async (req, res) => {
+  const { id } = req.params;
+  const { rows } = await db.query("SELECT * FROM lib_books WHERE id=$1", [id]);
+  if (!rows[0]) return res.status(404).send("Not found");
+  const book = rows[0];
+  res.render("edit", { title: "Edit book", book });
+});
 
 app.get("/books/:id", async (req, res) => {
   const { id } = req.params;
@@ -104,33 +112,56 @@ app.get("/books/:id", async (req, res) => {
 app.get("/new", (req, res) => res.render("new", { title: "Add a book" }));
 
 // create
+// helper functions
+const toNull = v => (v === '' || v === undefined || v === null ? null : v);
+const toIntOrNull = v => {
+  if (v === '' || v === undefined || v === null) return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+};
+
+// add book
 app.post("/books", async (req, res) => {
   try {
-    const { books_name, author, isbn, read_date, rating } = req.body;
+    const { books_name, author, isbn, read_date, rating, notes } = req.body;
 
-    // basic validation
-    if (!books_name || !books_name.trim()) {
+    if (!books_name?.trim()) {
       return res.status(400).send("Title is required");
     }
 
-    await db.query(
-      `INSERT INTO lib_books (books_name, author, isbn, read_date, rating)
-       VALUES ($1,$2,$3,$4,$5)`,
-      [
-        books_name.trim(),
-        toNull(author),
-        toNull(isbn),
-        toNull(read_date),                 // '' -> NULL, avoids TIMESTAMP errors
-        toNull(rating) === null ? null : Number(rating) // '' -> NULL; otherwise number
-      ]
-    );
+    const r = toIntOrNull(rating);
+    if (r !== null && (r < 0 || r > 10)) {
+      return res.status(400).send("Rating must be between 0 and 10");
+    }
 
+    const sql = `
+      INSERT INTO lib_books (books_name, author, isbn, read_date, rating, notes)
+      VALUES (
+        $1,
+        NULLIF($2,''),
+        NULLIF($3,''),
+        NULLIF($4,'')::timestamp,
+        $5,
+        NULLIF($6,'')
+      )
+    `;
+    const params = [
+      books_name.trim(),
+      toNull(author),
+      toNull(isbn),
+      toNull(read_date),
+      r,
+      toNull(notes)
+    ];
+
+    await db.query(sql, params);
     res.redirect("/");
   } catch (err) {
-    console.error("POST /books failed:", err);
+    console.error("POST /books failed:", err.message, err.detail);
     res.status(500).send("Server error while adding a book");
   }
 });
+
 // update meta
 app.post("/books/:id/update-meta", async (req, res) => {
   const { id } = req.params;
