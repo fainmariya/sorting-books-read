@@ -9,7 +9,7 @@
     <!-- Левая колонка: данные книги -->
     <div class="book-info">
       <img class="cover" src="<%= book.cover %>" alt="Cover of <%= book.books_name %>">
-      <h1><%= book.books_name %></h1>
+      
       <% if (book.author) { %><p><strong>Author:</strong> <%= book.author %></p><% } %>
       <% if (book.isbn)   { %><p><strong>ISBN:</strong> <%= book.isbn %></p><% } %>
       <% if (book.rating !== null && book.rating !== undefined) { %>
