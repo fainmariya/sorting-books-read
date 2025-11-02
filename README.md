@@ -1,42 +1,25 @@
+# 📚 Sorting Books (Read)
 
-to start use npm i  and then nodemon index.js
+Personal library tracker: add books, sort and filter them, and keep the list in the browser.
 
-I Use the Open Library Covers API to fetch book covers.
+## 🧠 Stack
+- HTML5 / CSS3
+- Vanilla JavaScript
+- LocalStorage (persistent data)
 
-Create a database to store books I have read.
+## 🚀 Features
+- Add / edit / delete books (title, author, status, rating)
+- Sorting (by title/author/rating/date)
+- Filtering (read / in progress / to read)
+- Persistent storage via LocalStorage
+- Keyboard-friendly UI + basic a11y
 
-Have a way to add new data about books, update previous reviews and delete entries.
-
-
-Be able to sort your book entries by rating and recency.
-
-R
-1. Database Persistance
-Persist data using a PostgreSQL database.
-
-Used CRUD methods to manipulate data in the database.
-
-2. Project Setup
-Set up a new Node.js project using Express.js.
-
-Include pg for working with my localhost PostgreSQL database.
-
-Include EJS for templating.
-
-Create a frontend in HTML CSS JS.
-
-
-3. API Integration
-Implement  a GET endpoint to interact with your chosen API.
-
-Used Axios to send HTTP requests to the API and handle responses.
-
-4. Data Presentation
-Design the application to present the book covers from the API and the data in my database a in a user-friendly way.
-
-Used appropriate HTML, CSS, and a templating engine like EJS.
-
-
-
-
-
+## 💻 Run locally
+```bash
+git clone https://github.com/fainmariya/sorting-books-read
+cd sorting-books-read
+# вариант 1 (просто открыть как статическую страницу)
+open index.html
+# вариант 2 (локальный сервер для CORS/модулей)
+# python3 -m http.server 5173
+# и открыть http://localhost:5173
