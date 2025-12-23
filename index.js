@@ -167,26 +167,37 @@ app.post("/books", async (req, res) => {
 app.post("/books/:id/update-notes", async (req, res) => {
   try {
     const { id } = req.params;
-    const { books_name, author, isbn, read_date, rating } = req.body;
+    const { notes } = req.body;
+
+    await db.query(
+      `UPDATE lib_books
+       SET notes = NULLIF($1,'')
+       WHERE id = $2`,
+      [notes, id]
+    );
+
+    res.redirect(`/books/${id}`);
+  } catch (err) {
+    console.error("POST /books/:id/update-notes failed:", err);
+    res.status(500).send("Server error while saving notes");
+  }
+});
+app.post("/books/:id/update-meta", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { books_name, author, isbn } = req.body;
 
     if (!books_name?.trim()) {
       return res.status(400).send("Title is required");
-    }
-
-    const r = toIntOrNull(rating);
-    if (r !== null && (r < 0 || r > 10)) {
-      return res.status(400).send("Rating must be between 0 and 10");
     }
 
     await db.query(
       `UPDATE lib_books
        SET books_name = $1,
            author = NULLIF($2,''),
-           isbn = NULLIF($3,''),
-           read_date = NULLIF($4,'')::timestamp,
-           rating = $5
-       WHERE id = $6`,
-      [books_name.trim(), author || "", isbn || "", read_date || "", r, id]
+           isbn = NULLIF($3,'')
+       WHERE id = $4`,
+      [books_name.trim(), author || "", isbn || "", id]
     );
 
     res.redirect(`/books/${id}`);
@@ -195,6 +206,7 @@ app.post("/books/:id/update-notes", async (req, res) => {
     res.status(500).send("Server error while updating a book");
   }
 });
+
 // delete
 app.post("/books/:id/delete", async (req, res) => {
   const { id } = req.params;
@@ -224,6 +236,7 @@ app.post("/api/books", async (req, res) => {
   res.status(201).json(rows[0]);
 });
 
+
 app.get("/debug", (req, res) => {
   res.json({ ok: true, version: "2025-12-23-update-meta-v1" });
 });
@@ -235,11 +248,5 @@ const PORT = process.env.PORT || 3000;
 // on the Render have to listen to 0.0.0.0
 
 
-app.get("/debug", (req, res) => {
-  res.json({
-    ok: true,
-    hasUpdateMetaRouteExpected: true,
-    time: new Date().toISOString(),
-  });
-});
+
 app.listen(PORT, "0.0.0.0", () => console.log(`BookNotes on ${PORT}`));
