@@ -164,19 +164,36 @@ app.post("/books", async (req, res) => {
 
 // update meta
 app.post("/books/:id/update-notes", async (req, res) => {
-  const { id } = req.params;
-  const { notes } = req.body;
+  try {
+    const { id } = req.params;
+    const { books_name, author, isbn, read_date, rating } = req.body;
 
-  await db.query(
-    `UPDATE lib_books
-     SET notes = NULLIF($1,'')
-     WHERE id=$2`,
-    [notes, id]
-  );
+    if (!books_name?.trim()) {
+      return res.status(400).send("Title is required");
+    }
 
-  res.redirect(`/books/${id}`);
+    const r = toIntOrNull(rating);
+    if (r !== null && (r < 0 || r > 10)) {
+      return res.status(400).send("Rating must be between 0 and 10");
+    }
+
+    await db.query(
+      `UPDATE lib_books
+       SET books_name = $1,
+           author = NULLIF($2,''),
+           isbn = NULLIF($3,''),
+           read_date = NULLIF($4,'')::timestamp,
+           rating = $5
+       WHERE id = $6`,
+      [books_name.trim(), author || "", isbn || "", read_date || "", r, id]
+    );
+
+    res.redirect(`/books/${id}`);
+  } catch (err) {
+    console.error("POST /books/:id/update-meta failed:", err);
+    res.status(500).send("Server error while updating a book");
+  }
 });
-
 // delete
 app.post("/books/:id/delete", async (req, res) => {
   const { id } = req.params;
