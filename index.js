@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import axios from "axios";
 import pg from "pg";
 
+console.log("APP_VERSION: 2025-12-23-update-meta-v1");
 console.log("DB_URL set:", Boolean(process.env.DATABASE_URL));
 console.log("DB_URL prefix:", (process.env.DATABASE_URL || "").slice(0, 12)); // должно быть "postgresql:/"
 
@@ -223,6 +224,9 @@ app.post("/api/books", async (req, res) => {
   res.status(201).json(rows[0]);
 });
 
+app.get("/debug", (req, res) => {
+  res.json({ ok: true, version: "2025-12-23-update-meta-v1" });
+});
 // Healthcheck (helpfull for Render)
 app.get("/health", (req, res) => res.send("ok"));
 
