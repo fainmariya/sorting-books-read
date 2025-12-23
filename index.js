@@ -229,4 +229,13 @@ app.get("/health", (req, res) => res.send("ok"));
 // ====== START ======
 const PORT = process.env.PORT || 3000;
 // on the Render have to listen to 0.0.0.0
+
+
+app.get("/debug", (req, res) => {
+  res.json({
+    ok: true,
+    hasUpdateMetaRouteExpected: true,
+    time: new Date().toISOString(),
+  });
+});
 app.listen(PORT, "0.0.0.0", () => console.log(`BookNotes on ${PORT}`));
